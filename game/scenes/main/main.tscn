@@ -1,0 +1,21 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/player/shadow.tscn" id="1"]
+
+[node name="Main" type="Node2D"]
+
+[node name="Shadow" parent="." instance=ExtResource("1")]
+position = Vector2(960, 540)
+
+[node name="Floor" type="StaticBody2D" parent="."]
+position = Vector2(960, 900)
+
+[node name="FloorCollision" type="CollisionShape2D" parent="Floor"]
+shape = SubResource("RectangleShape2D_floor")
+
+[node name="FloorRect" type="ColorRect" parent="Floor"]
+offset_left = -960.0
+offset_top = -4.0
+offset_right = 960.0
+offset_bottom = 4.0
+color = Color(0.184, 0.31, 0.31, 1)
