@@ -1,0 +1,9 @@
+.godot/
+*.import
+export_presets.cfg
+.DS_Store
+__pycache__/
+*.pyc
+.env
+*.tmp
+*.log
