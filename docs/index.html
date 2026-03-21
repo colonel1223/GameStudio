@@ -3,228 +3,161 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>UMBRAL STUDIO — Command Center</title>
+<title>UMBRAL STUDIO — Live Command Center</title>
+<meta name="description" content="AI-powered solo game studio. 10 Claude agents, Godot 4, one developer.">
 <link href="https://fonts.googleapis.com/css2?family=VT323&family=Pixelify+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  @keyframes blink { 0%,100% { opacity:1; } 50% { opacity:0; } }
-  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
-  @keyframes scanmove { 0% { transform:translateX(-100%); } 100% { transform:translateX(200%); } }
+  @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0;} }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
 
   body {
     background: #008080;
-    font-family: 'Pixelify Sans', 'Tahoma', sans-serif;
+    font-family: 'Pixelify Sans','Tahoma',sans-serif;
     min-height: 100vh;
     padding: 6px;
     overflow-x: hidden;
   }
-
-  /* CRT overlay */
   body::before {
-    content: '';
-    position: fixed; inset: 0; z-index: 99999; pointer-events: none;
-    background: repeating-linear-gradient(0deg, rgba(0,0,0,0.12) 0px, rgba(0,0,0,0.12) 1px, transparent 1px, transparent 3px);
+    content:''; position:fixed; inset:0; z-index:99999; pointer-events:none;
+    background: repeating-linear-gradient(0deg,rgba(0,0,0,0.12) 0px,rgba(0,0,0,0.12) 1px,transparent 1px,transparent 3px);
   }
   body::after {
-    content: '';
-    position: fixed; inset: 0; z-index: 99998; pointer-events: none;
-    background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.35) 100%);
+    content:''; position:fixed; inset:0; z-index:99998; pointer-events:none;
+    background: radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,0.35) 100%);
   }
 
   .win {
-    border: 2px solid #808080;
-    border-top-color: #dfdfdf;
-    border-left-color: #dfdfdf;
-    box-shadow: 2px 2px 0px #000;
-    background: #c0c0c0;
-    display: flex; flex-direction: column;
-    overflow: hidden;
+    border:2px solid #808080; border-top-color:#dfdfdf; border-left-color:#dfdfdf;
+    box-shadow:2px 2px 0px #000; background:#c0c0c0;
+    display:flex; flex-direction:column; overflow:hidden;
   }
   .win-title {
-    background: linear-gradient(180deg, #0a246a, #3a6ea5);
-    padding: 3px 4px;
-    display: flex; align-items: center; gap: 4px;
-    min-height: 22px; user-select: none;
+    background:linear-gradient(180deg,#0a246a,#3a6ea5);
+    padding:3px 4px; display:flex; align-items:center; gap:4px;
+    min-height:22px; user-select:none;
   }
   .win-title span {
-    font-size: 11px; color: #fff; font-weight: 700;
-    text-shadow: 1px 1px 0px rgba(0,0,0,0.5);
-    flex: 1;
-    font-family: 'Pixelify Sans', sans-serif;
+    font-size:11px; color:#fff; font-weight:700;
+    text-shadow:1px 1px 0px rgba(0,0,0,0.5); flex:1;
+    font-family:'Pixelify Sans',sans-serif;
   }
   .win-btn {
-    width: 16px; height: 14px;
-    background: linear-gradient(180deg, #dfdfdf, #bfbfbf);
-    border: 1px solid #808080; border-top-color: #fff; border-left-color: #fff;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 9px; cursor: pointer;
+    width:16px; height:14px;
+    background:linear-gradient(180deg,#dfdfdf,#bfbfbf);
+    border:1px solid #808080; border-top-color:#fff; border-left-color:#fff;
+    display:flex; align-items:center; justify-content:center;
+    font-size:9px; cursor:pointer;
   }
-  .win-body { flex: 1; overflow: auto; }
+  .win-body { flex:1; overflow:auto; }
 
   .grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr 200px;
-    grid-template-rows: auto auto;
-    gap: 6px;
-    padding-bottom: 38px;
-    min-height: calc(100vh - 48px);
+    display:grid;
+    grid-template-columns:1fr 1fr 210px;
+    grid-template-rows:auto auto;
+    gap:6px; padding-bottom:38px;
+    min-height:calc(100vh - 48px);
   }
 
-  /* Terminal styling */
-  .term {
-    background: #000; color: #00ff41;
-    font-family: 'VT323', 'Courier New', monospace;
-    padding: 0; font-size: 14px; line-height: 1.5;
-  }
-  .term-header {
-    padding: 6px 8px; border-bottom: 1px solid #003300;
-  }
+  .term { background:#000; color:#00ff41; font-family:'VT323','Courier New',monospace; font-size:14px; line-height:1.5; }
+  .term-header { padding:6px 8px; border-bottom:1px solid #003300; }
   .term-row {
-    display: grid;
-    grid-template-columns: 44px 100px 52px 42px 48px;
-    padding: 1px 6px;
-    border-bottom: 1px solid #002200;
-    cursor: pointer;
-    font-size: 13px;
+    display:grid; grid-template-columns:50px 1fr 58px 46px 50px;
+    padding:2px 6px; border-bottom:1px solid #002200; cursor:pointer; font-size:13px;
   }
-  .term-row:hover { background: #002200; }
-  .term-row.active { background: #003300; }
+  .term-row:hover { background:#002200; }
+  .term-row.active { background:#003300; }
   .term-head {
-    display: grid;
-    grid-template-columns: 44px 100px 52px 42px 48px;
-    padding: 2px 6px;
-    background: #001a00;
-    color: #0af;
-    font-weight: 700;
-    font-size: 12px;
-    border-bottom: 1px solid #004400;
+    display:grid; grid-template-columns:50px 1fr 58px 46px 50px;
+    padding:2px 6px; background:#001a00; color:#0af; font-weight:700; font-size:12px; border-bottom:1px solid #004400;
   }
+  .s-active { color:#ff0; font-weight:700; }
+  .s-online { color:#00ff41; }
 
-  .status-active { color: #ff0; font-weight: 700; }
-  .status-online { color: #00ff41; }
+  .log { background:#0a0a18; color:#0af; padding:8px; font-family:'VT323',monospace; font-size:14px; line-height:1.7; }
+  .log-time { color:#555; }
+  .log-agent { color:#00ff41; }
+  .log-active { color:#ff0; font-weight:700; }
 
-  /* Log panel */
-  .log { background: #0a0a18; color: #0af; padding: 8px; font-family: 'VT323', monospace; font-size: 14px; line-height: 1.7; }
-  .log-time { color: #555; }
-  .log-agent { color: #00ff41; }
-  .log-agent-active { color: #ff0; font-weight: 700; }
-  .log-msg { color: #ccc; }
+  .sprint-body { background:#fffffc; padding:8px; }
+  .progress-bar { height:18px; border:2px inset #dfdfdf; background:#fff; margin-bottom:8px; position:relative; overflow:hidden; }
+  .progress-fill { position:absolute; top:0; left:0; bottom:0; background:repeating-linear-gradient(90deg,#0a246a 0px,#0a246a 8px,#3a6ea5 8px,#3a6ea5 16px); transition:width 1s ease; }
+  .task-row { display:flex; align-items:center; gap:6px; padding:2px 0; font-size:11px; }
+  .task-done { color:#808080; text-decoration:line-through; }
 
-  /* Sprint tracker */
-  .sprint-body { background: #fffffc; padding: 8px; }
-  .sprint-title { font-size: 11px; font-weight: 700; color: #0a246a; margin-bottom: 6px; }
-  .progress-bar {
-    height: 18px; border: 2px inset #dfdfdf; background: #fff;
-    margin-bottom: 8px; position: relative; overflow: hidden;
-  }
-  .progress-fill {
-    position: absolute; top:0; left:0; bottom:0;
-    background: repeating-linear-gradient(90deg, #0a246a 0px, #0a246a 8px, #3a6ea5 8px, #3a6ea5 16px);
-  }
-  .task-row { display: flex; align-items: center; gap: 6px; padding: 2px 0; font-size: 11px; }
-  .task-done { color: #808080; text-decoration: line-through; }
-  .task-icon-done { color: #006400; }
-  .task-icon-proc { color: #8B4513; }
-  .task-icon-wait { color: #808080; }
+  .file-row { display:grid; grid-template-columns:20px 1fr 50px 50px; padding:3px 6px; border-bottom:1px solid #f0f0f0; cursor:pointer; font-size:11px; background:#fff; }
+  .file-row:hover { background:#0a246a20; }
+  .file-header { display:grid; grid-template-columns:20px 1fr 50px 50px; background:#f0f0f0; border-bottom:1px solid #c0c0c0; padding:2px 6px; font-weight:700; font-size:10px; }
+  .file-meta { color:#808080; }
 
-  /* File manager */
-  .file-grid {
-    display: grid;
-    grid-template-columns: 20px 1fr 44px 36px 44px;
-    font-size: 11px;
-  }
-  .file-header {
-    grid-column: 1 / -1;
-    display: grid;
-    grid-template-columns: 20px 1fr 44px 36px 44px;
-    background: #f0f0f0; border-bottom: 1px solid #c0c0c0;
-    padding: 2px 4px; font-weight: 700; font-size: 10px;
-  }
-  .file-row {
-    grid-column: 1 / -1;
-    display: grid;
-    grid-template-columns: 20px 1fr 44px 36px 44px;
-    padding: 2px 4px; border-bottom: 1px solid #f0f0f0;
-    cursor: pointer; background: #fff;
-  }
-  .file-row:hover { background: #0a246a20; }
-  .file-meta { color: #808080; }
-  .file-bar {
-    border-top: 2px inset #dfdfdf; padding: 2px 6px;
-    font-size: 10px; color: #808080; background: #f0f0f0;
-  }
+  .week-grid { display:flex; gap:2px; flex-wrap:wrap; }
+  .week-box { width:14px; height:14px; border:1px solid #c0c0c0; background:#fff; font-size:7px; display:flex; align-items:center; justify-content:center; color:#c0c0c0; font-weight:700; }
+  .week-box.active { background:#0a246a; border-color:#0a246a; color:#fff; }
 
-  /* Matrix canvas */
-  #matrix-canvas { width: 100%; height: 100%; opacity: 0.5; }
-  .sys-overlay {
-    position: absolute; top: 8px; left: 8px; right: 8px;
-    font-family: 'VT323', monospace; font-size: 13px;
-    color: #00ff41; text-shadow: 0 0 6px #00ff4160; z-index: 2;
-  }
-  .sys-section { border-bottom: 1px solid #003300; padding-bottom: 4px; margin-bottom: 6px; color: #0af; font-weight: 700; }
-
-  /* Week grid */
-  .week-grid { display: flex; gap: 2px; flex-wrap: wrap; }
-  .week-box {
-    width: 14px; height: 14px;
-    border: 1px solid #c0c0c0; background: #fff;
-    font-size: 7px; display: flex; align-items: center; justify-content: center;
-    color: #c0c0c0; font-weight: 700;
-  }
-  .week-box.active { background: #0a246a; border-color: #0a246a; color: #fff; }
-
-  /* Taskbar */
   .taskbar {
-    position: fixed; bottom: 0; left: 0; right: 0; height: 32px; z-index: 9000;
-    background: linear-gradient(180deg, #dfdfdf, #c0c0c0);
-    border-top: 2px solid #fff;
-    display: flex; align-items: center; padding: 0 4px; gap: 4px;
+    position:fixed; bottom:0; left:0; right:0; height:32px; z-index:9000;
+    background:linear-gradient(180deg,#dfdfdf,#c0c0c0);
+    border-top:2px solid #fff; display:flex; align-items:center; padding:0 4px; gap:4px;
   }
   .start-btn {
-    background: linear-gradient(180deg, #3a6ea5, #0a246a);
-    color: #fff; font-weight: 700; font-size: 12px;
-    padding: 2px 8px; border: 2px solid #808080;
-    border-top-color: #dfdfdf; border-left-color: #dfdfdf;
-    cursor: pointer; height: 24px;
-    font-family: 'Pixelify Sans', sans-serif;
-    display: flex; align-items: center; gap: 4px;
+    background:linear-gradient(180deg,#3a6ea5,#0a246a);
+    color:#fff; font-weight:700; font-size:12px;
+    padding:2px 8px; border:2px solid #808080; border-top-color:#dfdfdf; border-left-color:#dfdfdf;
+    cursor:pointer; height:24px; font-family:'Pixelify Sans',sans-serif;
+    display:flex; align-items:center; gap:4px;
   }
-  .taskbar-clock {
-    border: 1px inset #dfdfdf; background: #c0c0c0;
-    padding: 2px 8px; font-size: 11px;
-    font-family: 'VT323', monospace;
-  }
+  .taskbar-clock { border:1px inset #dfdfdf; background:#c0c0c0; padding:2px 8px; font-size:11px; font-family:'VT323',monospace; }
 
-  /* Boot screen */
   #boot-screen {
-    position: fixed; inset: 0; z-index: 100000;
-    background: #000; padding: 40px;
-    font-family: 'VT323', monospace; font-size: 16px;
-    color: #00ff41; overflow: hidden;
+    position:fixed; inset:0; z-index:100000;
+    background:#000; padding:40px;
+    font-family:'VT323',monospace; font-size:16px;
+    color:#00ff41; overflow:hidden;
   }
-  #boot-screen .ok { color: #0f0; font-weight: 700; }
-  #boot-screen .banner { color: #0af; }
-  #boot-screen .nominal { color: #ff0; font-weight: 700; }
-  #boot-screen .init { color: #0af; animation: blink 1s step-end infinite; margin-top: 20px; font-size: 14px; }
+  #boot-screen .ok { color:#0f0; font-weight:700; }
+  #boot-screen .banner { color:#0af; }
+  #boot-screen .nominal { color:#ff0; font-weight:700; }
+  #boot-screen .init { color:#0af; animation:blink 1s step-end infinite; margin-top:20px; font-size:14px; }
 
   .right-col { grid-row: 1 / 3; }
+  .live-badge { display:inline-block; width:6px; height:6px; border-radius:50%; background:#f00; animation:pulse 1.5s ease-in-out infinite; margin-right:4px; vertical-align:middle; }
+  .commit-card { padding:6px 8px; border-bottom:1px solid #002200; font-size:12px; }
+  .commit-hash { color:#ff0; }
+  .commit-msg { color:#ccc; }
+  .commit-date { color:#555; font-size:10px; }
+  .commit-author { color:#0af; }
+  .stat-num { font-size:20px; font-weight:700; color:#00ff41; font-family:'VT323',monospace; }
+  .stat-label { font-size:10px; color:#888; }
+  .stat-box { text-align:center; padding:6px 4px; border-right:1px solid #002200; }
+  .stat-box:last-child { border-right:none; }
+  .sys-section { border-bottom:1px solid #003300; padding-bottom:3px; margin-bottom:5px; color:#0af; font-weight:700; font-size:12px; }
 </style>
 </head>
 <body>
 
-<!-- BOOT SCREEN -->
-<div id="boot-screen">
-  <pre id="boot-text" style="line-height:1.6; text-shadow: 0 0 8px #00ff4180;"></pre>
-</div>
+<div id="boot-screen"><pre id="boot-text" style="line-height:1.6; text-shadow:0 0 8px #00ff4180;"></pre></div>
 
-<!-- MAIN DASHBOARD (hidden until boot completes) -->
 <div id="dashboard" style="display:none;">
   <div class="grid">
 
-    <!-- AGENT PROCESS MONITOR -->
+    <!-- LIVE GIT COMMITS -->
     <div class="win">
       <div class="win-title">
-        <span>🖥️ umbral_agents — htop</span>
+        <span><span class="live-badge"></span>📡 git log — LIVE from GitHub</span>
+        <div class="win-btn">_</div><div class="win-btn">□</div><div class="win-btn">✕</div>
+      </div>
+      <div class="win-body term" style="padding:0;">
+        <div style="display:flex; background:#001a00; border-bottom:1px solid #003300;" id="stats-bar"></div>
+        <div id="commit-list" style="padding:4px 0;">
+          <div style="padding:12px; color:#555;">Fetching live data from GitHub...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AGENT ROSTER -->
+    <div class="win">
+      <div class="win-title">
+        <span>🖥️ umbral_agents — 10 processes</span>
         <div class="win-btn">_</div><div class="win-btn">□</div><div class="win-btn">✕</div>
       </div>
       <div class="win-body term">
@@ -233,63 +166,59 @@
             <span style="color:#0af;">UMBRAL AGENT MONITOR v1.0</span>
             <span id="htop-time" style="color:#888;"></span>
           </div>
-          <div style="display:flex; gap:16px; font-size:12px; color:#888;">
+          <div style="display:flex; gap:14px; font-size:12px; color:#888;">
             <span>Tasks: <span style="color:#00ff41;">10</span></span>
-            <span>Running: <span style="color:#ff0;">1</span></span>
-            <span>Idle: <span style="color:#00ff41;">9</span></span>
+            <span>Model: <span style="color:#ff0;">claude-sonnet-4</span></span>
             <span>Uptime: <span id="uptime" style="color:#0af;">00:00:00</span></span>
           </div>
-          <div style="margin-top:6px; display:flex; align-items:center; gap:6px; font-size:12px;">
+          <div style="margin-top:4px; display:flex; align-items:center; gap:6px; font-size:12px;">
             <span style="color:#888; width:28px;">CPU</span>
-            <div id="cpu-bars" style="flex:1; display:flex; height:12px; gap:1px;"></div>
+            <div id="cpu-bars" style="flex:1; display:flex; height:10px; gap:1px;"></div>
             <span id="cpu-pct" style="color:#ff0; width:36px; text-align:right;">0%</span>
           </div>
         </div>
-        <div class="term-head">
-          <span>PID</span><span>AGENT</span><span>STATE</span><span>CPU%</span><span>MEM</span>
-        </div>
+        <div class="term-head"><span>PID</span><span>AGENT</span><span>STATUS</span><span>CPU%</span><span>MEM</span></div>
         <div id="agent-list"></div>
       </div>
     </div>
 
-    <!-- ACTIVITY LOG -->
-    <div class="win">
-      <div class="win-title">
-        <span>📋 studio_log — tail -f</span>
-        <div class="win-btn">_</div><div class="win-btn">□</div><div class="win-btn">✕</div>
-      </div>
-      <div class="win-body log" id="activity-log"></div>
-    </div>
-
-    <!-- MATRIX / SYS INFO -->
+    <!-- SYSTEM INFO + MATRIX -->
     <div class="win right-col">
       <div class="win-title">
         <span>🌐 sys_monitor</span>
         <div class="win-btn">_</div><div class="win-btn">□</div><div class="win-btn">✕</div>
       </div>
-      <div class="win-body" style="background:#000; position:relative; min-height:400px;">
-        <canvas id="matrix-canvas"></canvas>
-        <div class="sys-overlay">
-          <div class="sys-section">┌─ SYSTEM ─────────┐</div>
-          <div>OS: macOS Darwin</div>
-          <div>CPU: Intel 32GB</div>
-          <div>Godot: 4.6.1</div>
-          <div>Blender: 4.5.8</div>
-          <div>Python: 3.13</div>
-          <div style="margin-top:8px;" class="sys-section">┌─ API STATUS ─────┐</div>
-          <div style="color:#00ff41;">Anthropic: ██████ OK</div>
-          <div style="color:#00ff41;">GitHub: ██████ SYNCED</div>
-          <div style="color:#555;">NVIDIA: ██░░░░ NO GPU</div>
-          <div style="margin-top:8px;" class="sys-section">┌─ GAME STATS ─────┐</div>
-          <div>Signals: 38</div>
-          <div>Scripts: 10</div>
-          <div>Total LOC: <span id="loc-counter">0</span></div>
-          <div>Commits: <span id="commit-counter">0</span></div>
-          <div style="margin-top:8px;" class="sys-section">┌─ AGENTS ─────────┐</div>
-          <div>Total: 10</div>
-          <div>Active: <span style="color:#ff0;">1</span></div>
-          <div>Queued: 0</div>
-          <div style="margin-top:8px; color:#ff0;" id="gen-status">READY</div>
+      <div class="win-body" style="background:#000; position:relative; min-height:500px;">
+        <canvas id="matrix-canvas" style="width:100%;height:100%;opacity:0.4;"></canvas>
+        <div style="position:absolute; top:8px; left:8px; right:8px; font-family:'VT323',monospace; font-size:13px; color:#00ff41; text-shadow:0 0 6px #00ff4160; z-index:2;">
+          <div class="sys-section">┌─ DEVELOPER ──────┐</div>
+          <div>Spencer Cottrell</div>
+          <div style="color:#888;">SJSU Economics</div>
+          <div style="color:#888;">San Jose, CA</div>
+          <div style="margin-top:6px;" class="sys-section">┌─ STACK ──────────┐</div>
+          <div>Godot: <span style="color:#0af;">4.6.1</span></div>
+          <div>Blender: <span style="color:#0af;">4.5.8</span></div>
+          <div>Python: <span style="color:#0af;">3.13</span></div>
+          <div>AI: <span style="color:#ff0;">Claude Sonnet 4</span></div>
+          <div style="margin-top:6px;" class="sys-section">┌─ CONNECTIONS ────┐</div>
+          <div style="color:#00ff41;">Anthropic API ████ OK</div>
+          <div id="gh-status" style="color:#555;">GitHub ░░░░░░ CHECKING</div>
+          <div style="margin-top:6px;" class="sys-section">┌─ REPO STATS ─────┐</div>
+          <div>Commits: <span id="total-commits" style="color:#ff0;">...</span></div>
+          <div>Files: <span id="total-files" style="color:#ff0;">...</span></div>
+          <div>Agents: <span style="color:#ff0;">10</span></div>
+          <div>Scripts: <span id="total-scripts" style="color:#ff0;">...</span></div>
+          <div style="margin-top:6px;" class="sys-section">┌─ GAME ───────────┐</div>
+          <div>Title: <span style="color:#DC143C;">UMBRAL</span></div>
+          <div>Engine: Godot 4</div>
+          <div>Genre: Puzzle/Narrative</div>
+          <div>Sprint: <span style="color:#ff0;">1 of 12</span></div>
+          <div>Week: <span style="color:#ff0;">1 of 25</span></div>
+          <div style="margin-top:6px;" class="sys-section">┌─ MISSION ────────┐</div>
+          <div style="color:#DC143C; font-size:11px;">Solo dev + AI agents</div>
+          <div style="color:#DC143C; font-size:11px;">vs the entire industry.</div>
+          <div style="color:#DC143C; font-size:11px;">Games about passion,</div>
+          <div style="color:#DC143C; font-size:11px;">not microtransactions.</div>
         </div>
       </div>
     </div>
@@ -301,132 +230,106 @@
         <div class="win-btn">_</div><div class="win-btn">□</div><div class="win-btn">✕</div>
       </div>
       <div class="win-body sprint-body">
-        <div class="sprint-title">SPRINT 1: FOUNDATION — <span id="tasks-done">2</span>/6 TASKS</div>
-        <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:33%;"></div></div>
+        <div style="font-size:11px; font-weight:700; color:#0a246a; margin-bottom:6px;">SPRINT 1: FOUNDATION — <span id="tasks-done">3</span>/6 TASKS</div>
+        <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:50%;"></div></div>
         <div id="task-list"></div>
         <div style="margin-top:10px; padding-top:6px; border-top:1px solid #c0c0c0;">
-          <div style="font-size:10px; color:#808080; margin-bottom:4px;">25-WEEK TIMELINE:</div>
+          <div style="font-size:10px; color:#808080; margin-bottom:4px;">25-WEEK TIMELINE TO STEAM LAUNCH:</div>
           <div class="week-grid" id="week-grid"></div>
-          <div style="font-size:9px; color:#808080; margin-top:4px;">target launch: week 25</div>
+          <div style="font-size:9px; color:#808080; margin-top:4px;">target: Steam + itch.io @ $9.99</div>
         </div>
       </div>
     </div>
 
-    <!-- FILE MANAGER -->
+    <!-- LIVE FILE TREE FROM GITHUB -->
     <div class="win">
       <div class="win-title">
-        <span>📁 ~/GameStudio/ — Explorer</span>
+        <span><span class="live-badge"></span>📁 repo contents — LIVE</span>
         <div class="win-btn">_</div><div class="win-btn">□</div><div class="win-btn">✕</div>
       </div>
       <div class="win-body" style="background:#fff;">
-        <div style="background:#f0f0f0; border-bottom:1px solid #c0c0c0; padding:2px 6px; font-size:10px; display:flex; gap:8px;">
-          <span>📁 agents/</span><span>📁 game/</span><span>📁 output/</span>
-        </div>
         <div style="padding:3px 6px; border-bottom:1px solid #c0c0c0; display:flex; align-items:center; gap:4px;">
-          <span style="font-size:10px; color:#808080;">Address:</span>
-          <div style="flex:1; border:2px inset #dfdfdf; background:#fff; padding:1px 4px; font-size:11px; font-family:'VT323',monospace;">
-            ~/GameStudio/
-          </div>
+          <span style="font-size:10px; color:#808080;">Repo:</span>
+          <a href="https://github.com/colonel1223/GameStudio" target="_blank" style="flex:1; border:2px inset #dfdfdf; background:#fff; padding:1px 4px; font-size:11px; font-family:'VT323',monospace; color:#0a246a; text-decoration:none;">
+            github.com/colonel1223/GameStudio
+          </a>
         </div>
-        <div class="file-grid">
-          <div class="file-header"><span></span><span>Name</span><span>Size</span><span>Type</span><span>Mod</span></div>
-          <div id="file-list"></div>
-        </div>
-        <div class="file-bar" id="file-bar">10 objects — github.com/colonel1223/GameStudio [PUBLIC]</div>
+        <div class="file-header"><span></span><span>Path</span><span>Size</span><span>Type</span></div>
+        <div id="file-list"><div class="file-row"><span></span><span style="color:#888;">Loading from GitHub API...</span><span></span><span></span></div></div>
+        <div style="border-top:2px inset #dfdfdf; padding:2px 6px; font-size:10px; color:#808080; background:#f0f0f0;" id="file-bar">Fetching...</div>
       </div>
     </div>
 
   </div>
 
-  <!-- TASKBAR -->
   <div class="taskbar">
-    <div class="start-btn">◈ UMBRAL</div>
+    <div class="start-btn" onclick="window.open('https://github.com/colonel1223/GameStudio','_blank')">◈ UMBRAL</div>
     <div style="height:20px; width:1px; background:#808080; margin:0 2px;"></div>
-    <div style="font-size:10px; color:#000; padding:2px 6px; border:1px solid #808080; border-top-color:#dfdfdf; border-left-color:#dfdfdf; background:#c0c0c0;">🖥️ Studio Dashboard</div>
+    <div style="font-size:10px; color:#000; padding:2px 6px; border:1px solid #808080; border-top-color:#dfdfdf; border-left-color:#dfdfdf; background:#c0c0c0;">
+      🖥️ Live Studio Dashboard
+    </div>
     <div style="flex:1;"></div>
+    <div style="font-size:9px; color:#808080; padding:2px 6px;">Open Source — MIT License</div>
     <div class="taskbar-clock"><span>🔌</span> <span id="taskbar-time"></span></div>
   </div>
 </div>
 
 <script>
-// === DATA ===
-const AGENTS = [
-  { pid:"2847", name:"CREATIVE_DIR", status:"ONLINE", cpu:"0.2%", mem:"12MB" },
-  { pid:"2848", name:"NARRATIVE_DES", status:"ONLINE", cpu:"0.1%", mem:"8MB" },
-  { pid:"2849", name:"ART_DIRECTOR", status:"ONLINE", cpu:"0.3%", mem:"24MB" },
-  { pid:"2850", name:"SOUND_DESIGN", status:"ONLINE", cpu:"0.1%", mem:"6MB" },
-  { pid:"2851", name:"LEAD_PROGRAM", status:"ACTIVE", cpu:"47.3%", mem:"128MB" },
-  { pid:"2852", name:"PRODUCER_MGR", status:"ONLINE", cpu:"0.1%", mem:"4MB" },
-  { pid:"2853", name:"SHADER_ARTIST", status:"ONLINE", cpu:"0.0%", mem:"2MB" },
-  { pid:"2854", name:"QA_TESTER", status:"ONLINE", cpu:"0.0%", mem:"2MB" },
-  { pid:"2855", name:"UX_RESEARCH", status:"ONLINE", cpu:"0.1%", mem:"3MB" },
-  { pid:"2856", name:"PLAYTESTER", status:"ONLINE", cpu:"0.0%", mem:"2MB" },
-];
+const GITHUB_REPO = "colonel1223/GameStudio";
+const API = `https://api.github.com/repos/${GITHUB_REPO}`;
 
-const ACTIVITY = [
-  { time:"19:21:11", agent:"CREATIVE_DIR", msg:"UMBRAL concept approved", active:false },
-  { time:"19:23:44", agent:"NARRATIVE_DES", msg:"3-act narrative locked", active:false },
-  { time:"19:25:02", agent:"ART_DIRECTOR", msg:"Sumi-e visual system defined", active:false },
-  { time:"19:27:18", agent:"SOUND_DESIGN", msg:"4-layer adaptive audio committed", active:false },
-  { time:"19:30:36", agent:"LEAD_PROGRAM", msg:"signal_bus.gd — 165 lines — 38 signals", active:true },
-  { time:"19:33:15", agent:"LEAD_PROGRAM", msg:"shadow_player.gd — 335 lines — state machine", active:true },
-  { time:"19:35:02", agent:"PRODUCER_MGR", msg:"Sprint 1 initiated — 6 tasks queued", active:false },
-  { time:"19:36:09", agent:"PRODUCER_MGR", msg:"git push origin main — 5 commits synced", active:false },
-  { time:"19:40:00", agent:"LEAD_PROGRAM", msg:"main.tscn + shadow.tscn scenes created", active:true },
-  { time:"19:42:00", agent:"QA_TESTER", msg:"Awaiting code review requests...", active:false },
+const AGENTS = [
+  {pid:"2847",name:"CREATIVE_DIR",role:"Game concept & mechanics",status:"ONLINE",cpu:"0.2%",mem:"12MB"},
+  {pid:"2848",name:"NARRATIVE_DES",role:"Story, dialogue, lore",status:"ONLINE",cpu:"0.1%",mem:"8MB"},
+  {pid:"2849",name:"ART_DIRECTOR",role:"Visual identity & shaders",status:"ONLINE",cpu:"0.3%",mem:"24MB"},
+  {pid:"2850",name:"SOUND_DESIGN",role:"Adaptive audio system",status:"ONLINE",cpu:"0.1%",mem:"6MB"},
+  {pid:"2851",name:"LEAD_PROGRAM",role:"Godot 4 architecture",status:"ACTIVE",cpu:"47.3%",mem:"128MB"},
+  {pid:"2852",name:"PRODUCER_MGR",role:"Sprints, scope, timeline",status:"ONLINE",cpu:"0.1%",mem:"4MB"},
+  {pid:"2853",name:"SHADER_ART",role:"GPU shaders & VFX",status:"ONLINE",cpu:"0.0%",mem:"2MB"},
+  {pid:"2854",name:"QA_TESTER",role:"Bug detection & review",status:"ONLINE",cpu:"0.0%",mem:"2MB"},
+  {pid:"2855",name:"UX_RESEARCH",role:"Player psychology",status:"ONLINE",cpu:"0.1%",mem:"3MB"},
+  {pid:"2856",name:"PLAYTESTER",role:"Virtual playtesting",status:"ONLINE",cpu:"0.0%",mem:"2MB"},
 ];
 
 const TASKS = [
-  { task:"Godot project setup", status:"DONE", sprint:1 },
-  { task:"SignalBus autoload (165L)", status:"DONE", sprint:1 },
-  { task:"Shadow CharacterBody2D (335L)", status:"DONE", sprint:1 },
-  { task:"Custom 2D lighting proto", status:"NEXT", sprint:1 },
-  { task:"Shadow casting to Area2D", status:"WAIT", sprint:1 },
-  { task:"GameManager autoload", status:"WAIT", sprint:1 },
-  { task:"Level 1 greybox", status:"WAIT", sprint:2 },
-  { task:"Candle light source", status:"WAIT", sprint:2 },
-  { task:"Shadow stretch ability", status:"WAIT", sprint:2 },
-  { task:"Memory fragment trigger", status:"WAIT", sprint:2 },
-  { task:"Vertical slice build", status:"WAIT", sprint:2 },
-];
-
-const FILES = [
-  { name:"studio.py", size:"3.2K", type:"PY", mod:"19:21", icon:"🐍" },
-  { name:"chat.py", size:"1.8K", type:"PY", mod:"19:21", icon:"🐍" },
-  { name:"codegen.py", size:"1.4K", type:"PY", mod:"19:21", icon:"🐍" },
-  { name:"qa_tester.py", size:"1.1K", type:"PY", mod:"19:42", icon:"🐍" },
-  { name:"playtester.py", size:"1.3K", type:"PY", mod:"19:42", icon:"🐍" },
-  { name:"FULL_DESIGN_DOC.md", size:"48K", type:"MD", mod:"19:30", icon:"📄" },
-  { name:"project.godot", size:"2.8K", type:"CFG", mod:"19:35", icon:"⚙️" },
-  { name:"signal_bus.gd", size:"5.1K", type:"GD", mod:"19:35", icon:"🎮" },
-  { name:"shadow_player.gd", size:"9.8K", type:"GD", mod:"19:33", icon:"🎮" },
-  { name:"main.tscn", size:"0.8K", type:"SCN", mod:"19:40", icon:"🎬" },
+  {task:"Godot project setup",status:"DONE",sprint:1},
+  {task:"SignalBus autoload (165 lines)",status:"DONE",sprint:1},
+  {task:"Shadow player controller (335 lines)",status:"DONE",sprint:1},
+  {task:"Custom 2D lighting prototype",status:"NEXT",sprint:1},
+  {task:"Shadow casting to Area2D platforms",status:"WAIT",sprint:1},
+  {task:"GameManager autoload",status:"WAIT",sprint:1},
+  {task:"Level 1 greybox",status:"WAIT",sprint:2},
+  {task:"Candle light source",status:"WAIT",sprint:2},
+  {task:"Shadow stretch ability",status:"WAIT",sprint:2},
+  {task:"Memory fragment trigger",status:"WAIT",sprint:2},
+  {task:"Vertical slice build",status:"WAIT",sprint:2},
 ];
 
 const BOOT = [
   "[  0.000000] UMBRAL STUDIO v1.0.0 — KERNEL LOADING",
-  "[  0.000142] Spencer Cottrell <spencer.cottrell415@gmail.com>",
-  "[  0.000891] CPU: Intel MacBook Pro (32768 MB RAM)",
-  "[  0.001203] Anthropic API: claude-sonnet-4-20250514 ... [OK]",
-  "[  0.002107] Loading agent: creative_director (PID 2847) ... [OK]",
-  "[  0.002544] Loading agent: narrative_designer (PID 2848) ... [OK]",
-  "[  0.003012] Loading agent: art_director (PID 2849) ... [OK]",
-  "[  0.003891] Loading agent: sound_designer (PID 2850) ... [OK]",
-  "[  0.004203] Loading agent: lead_programmer (PID 2851) ... [OK]",
-  "[  0.004887] Loading agent: producer (PID 2852) ... [OK]",
-  "[  0.005100] Loading agent: shader_artist (PID 2853) ... [OK]",
-  "[  0.005300] Loading agent: qa_tester (PID 2854) ... [OK]",
-  "[  0.005500] Loading agent: ux_researcher (PID 2855) ... [OK]",
-  "[  0.005700] Loading agent: playtester (PID 2856) ... [OK]",
-  "[  0.006001] Godot Engine 4.6.1 ... [OK]",
-  "[  0.006234] Blender 4.5.8 ... [OK]",
-  "[  0.006400] Git: github.com/colonel1223/GameStudio [SYNCED]",
-  "[  0.006500] ════════════════════════════════════════",
-  "[  0.006501] ALL SYSTEMS NOMINAL — 10 AGENTS ONLINE",
-  "[  0.006502] ════════════════════════════════════════",
+  "[  0.000142] Developer: Spencer Cottrell",
+  "[  0.000500] Mission: Disrupt gaming. Passion over profit.",
+  "[  0.000891] Hardware: Intel MacBook Pro (32GB RAM)",
+  "[  0.001203] AI Engine: Anthropic Claude Sonnet 4 ... [OK]",
+  "[  0.002107] Loading: creative_director (PID 2847) ... [OK]",
+  "[  0.002544] Loading: narrative_designer (PID 2848) ... [OK]",
+  "[  0.003012] Loading: art_director (PID 2849) ... [OK]",
+  "[  0.003891] Loading: sound_designer (PID 2850) ... [OK]",
+  "[  0.004203] Loading: lead_programmer (PID 2851) ... [OK]",
+  "[  0.004500] Loading: producer (PID 2852) ... [OK]",
+  "[  0.004700] Loading: shader_artist (PID 2853) ... [OK]",
+  "[  0.004900] Loading: qa_tester (PID 2854) ... [OK]",
+  "[  0.005100] Loading: ux_researcher (PID 2855) ... [OK]",
+  "[  0.005300] Loading: playtester (PID 2856) ... [OK]",
+  "[  0.005500] Godot Engine 4.6.1 ... [OK]",
+  "[  0.005700] Blender 4.5.8 ... [OK]",
+  "[  0.006000] Connecting to GitHub API ... [OK]",
+  "[  0.006200] ════════════════════════════════════════════",
+  "[  0.006201] 10 AGENTS ONLINE — ALL SYSTEMS NOMINAL",
+  "[  0.006202] ════════════════════════════════════════════",
 ];
 
-// === BOOT SEQUENCE ===
+// === BOOT ===
 let bootEl = document.getElementById('boot-text');
 let bootIdx = 0;
 function bootTick() {
@@ -434,176 +337,213 @@ function bootTick() {
     let line = BOOT[bootIdx];
     let div = document.createElement('div');
     if (line.includes('[OK]')) {
-      div.innerHTML = line.replace('[OK]', '<span class="ok">[  OK  ]</span>');
+      div.innerHTML = line.replace('[OK]','<span class="ok">[  OK  ]</span>');
     } else if (line.includes('════')) {
-      div.className = 'banner';
-      div.textContent = line;
+      div.className = 'banner'; div.textContent = line;
     } else if (line.includes('NOMINAL')) {
-      div.className = 'nominal';
-      div.textContent = line;
-    } else {
-      div.textContent = line;
-    }
+      div.className = 'nominal'; div.textContent = line;
+    } else { div.textContent = line; }
     bootEl.appendChild(div);
     bootIdx++;
-    setTimeout(bootTick, 100);
+    setTimeout(bootTick, 90);
   } else {
     let init = document.createElement('div');
     init.className = 'init';
-    init.textContent = '▸ INITIALIZING STUDIO INTERFACE...';
+    init.textContent = '▸ FETCHING LIVE DATA FROM GITHUB...';
     bootEl.appendChild(init);
     setTimeout(() => {
       document.getElementById('boot-screen').style.display = 'none';
       document.getElementById('dashboard').style.display = 'block';
       initDashboard();
-    }, 1200);
+    }, 1000);
   }
 }
 bootTick();
 
-// === DASHBOARD INIT ===
+// === DASHBOARD ===
 function initDashboard() {
   renderAgents();
-  renderLog();
   renderTasks();
-  renderFiles();
   renderWeeks();
   initMatrix();
   initCPU();
   startClock();
-  animateCounters();
+  fetchGitHubData();
 }
 
+// === LIVE GITHUB DATA ===
+async function fetchGitHubData() {
+  try {
+    // Fetch commits
+    let commitsRes = await fetch(`${API}/commits?per_page=20`);
+    let commits = await commitsRes.json();
+
+    // Fetch repo tree
+    let treeRes = await fetch(`${API}/git/trees/main?recursive=1`);
+    let tree = await treeRes.json();
+
+    // Fetch repo info
+    let repoRes = await fetch(API);
+    let repo = await repoRes.json();
+
+    document.getElementById('gh-status').innerHTML = '<span style="color:#00ff41;">GitHub ██████ CONNECTED</span>';
+    renderCommits(commits);
+    renderFiles(tree);
+    renderStats(commits, tree);
+  } catch(e) {
+    document.getElementById('gh-status').innerHTML = '<span style="color:#f00;">GitHub ██░░░░ ERROR</span>';
+    document.getElementById('commit-list').innerHTML = '<div style="padding:12px;color:#f00;">Could not fetch from GitHub API. Repo may be private or rate-limited.</div>';
+  }
+}
+
+function renderCommits(commits) {
+  if (!Array.isArray(commits)) {
+    document.getElementById('commit-list').innerHTML = '<div style="padding:12px;color:#f00;">GitHub API error. Try refreshing in a minute.</div>';
+    return;
+  }
+
+  let statsHtml = `
+    <div class="stat-box" style="flex:1;"><div class="stat-num">${commits.length}+</div><div class="stat-label">COMMITS</div></div>
+    <div class="stat-box" style="flex:1;"><div class="stat-num">10</div><div class="stat-label">AGENTS</div></div>
+    <div class="stat-box" style="flex:1;"><div class="stat-num" style="color:#DC143C;">1</div><div class="stat-label">DEVELOPER</div></div>
+    <div class="stat-box" style="flex:1;"><div class="stat-num">S1</div><div class="stat-label">SPRINT</div></div>
+  `;
+  document.getElementById('stats-bar').innerHTML = statsHtml;
+
+  let html = commits.map(c => {
+    let date = new Date(c.commit.author.date);
+    let timeStr = date.toLocaleString();
+    let hash = c.sha.substring(0,7);
+    let msg = c.commit.message.split('\n')[0];
+    let author = c.commit.author.name;
+    return `
+      <div class="commit-card">
+        <div><span class="commit-hash">${hash}</span> <span class="commit-msg">${msg}</span></div>
+        <div><span class="commit-author">${author}</span> <span class="commit-date">· ${timeStr}</span></div>
+      </div>
+    `;
+  }).join('');
+  document.getElementById('commit-list').innerHTML = html;
+  document.getElementById('total-commits').textContent = commits.length + '+';
+}
+
+function renderFiles(tree) {
+  if (!tree.tree) {
+    document.getElementById('file-list').innerHTML = '<div class="file-row"><span></span><span style="color:#f00;">Could not load file tree</span><span></span><span></span></div>';
+    return;
+  }
+
+  let files = tree.tree.filter(f => f.type === 'blob');
+  let icons = {
+    'py':'🐍','gd':'🎮','md':'📄','tscn':'🎬','godot':'⚙️',
+    'gdshader':'✨','json':'📊','txt':'📝','gitignore':'🔒'
+  };
+
+  let html = files.map(f => {
+    let ext = f.path.split('.').pop().toLowerCase();
+    let icon = icons[ext] || '📄';
+    let size = f.size ? (f.size > 1024 ? (f.size/1024).toFixed(1)+'K' : f.size+'B') : '-';
+    let type = ext.toUpperCase();
+    return `
+      <div class="file-row" onclick="window.open('https://github.com/${GITHUB_REPO}/blob/main/${f.path}','_blank')">
+        <span style="font-size:12px;">${icon}</span>
+        <span>${f.path}</span>
+        <span class="file-meta">${size}</span>
+        <span class="file-meta">${type}</span>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('file-list').innerHTML = html;
+  document.getElementById('file-bar').textContent = `${files.length} files — click any file to view on GitHub`;
+  document.getElementById('total-files').textContent = files.length;
+
+  let scripts = files.filter(f => f.path.endsWith('.gd') || f.path.endsWith('.py'));
+  document.getElementById('total-scripts').textContent = scripts.length;
+}
+
+function renderStats(commits, tree) {
+  // Already handled in renderCommits and renderFiles
+}
+
+// === AGENTS ===
 function renderAgents() {
-  let el = document.getElementById('agent-list');
-  el.innerHTML = AGENTS.map(a => `
-    <div class="term-row ${a.status === 'ACTIVE' ? 'active' : ''}">
+  document.getElementById('agent-list').innerHTML = AGENTS.map(a => `
+    <div class="term-row ${a.status==='ACTIVE'?'active':''}">
       <span>${a.pid}</span>
-      <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${a.name}</span>
-      <span class="${a.status === 'ACTIVE' ? 'status-active' : 'status-online'}">${a.status}</span>
+      <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${a.role}">${a.name}</span>
+      <span class="${a.status==='ACTIVE'?'s-active':'s-online'}">${a.status}</span>
       <span>${a.cpu}</span>
       <span>${a.mem}</span>
     </div>
   `).join('');
 }
 
-function renderLog() {
-  let el = document.getElementById('activity-log');
-  el.innerHTML = ACTIVITY.map(e => `
-    <div>
-      <span class="log-time">[${e.time}]</span>
-      <span class="${e.active ? 'log-agent-active' : 'log-agent'}">${e.agent}</span>
-      <span class="log-msg">${e.msg}</span>
-    </div>
-  `).join('') + `
-    <div style="margin-top:6px;">
-      <span style="color:#00ff41;">studio@umbral</span><span style="color:#555;">:</span><span style="color:#0af;">~</span><span style="color:#555;">$ </span><span style="animation:blink 1s step-end infinite; color:#00ff41;">█</span>
-    </div>
-  `;
-}
-
+// === TASKS ===
 function renderTasks() {
-  let el = document.getElementById('task-list');
-  let icons = { DONE:'☑', NEXT:'◐', WAIT:'☐' };
-  let colors = { DONE:'task-icon-done', NEXT:'task-icon-proc', WAIT:'task-icon-wait' };
-  el.innerHTML = TASKS.map(t => `
-    <div class="task-row ${t.status === 'DONE' ? 'task-done' : ''}">
-      <span class="${colors[t.status]}" style="font-size:13px;">${icons[t.status]}</span>
+  let icons = {DONE:'☑',NEXT:'◐',WAIT:'☐'};
+  let colors = {DONE:'#006400',NEXT:'#8B4513',WAIT:'#808080'};
+  document.getElementById('task-list').innerHTML = TASKS.map(t => `
+    <div class="task-row ${t.status==='DONE'?'task-done':''}">
+      <span style="color:${colors[t.status]}; font-size:13px;">${icons[t.status]}</span>
       <span>${t.task}</span>
       <span style="margin-left:auto; font-size:9px; color:#808080;">S${t.sprint}</span>
     </div>
   `).join('');
 }
 
-function renderFiles() {
-  let el = document.getElementById('file-list');
-  el.innerHTML = FILES.map(f => `
-    <div class="file-row">
-      <span style="font-size:12px;">${f.icon}</span>
-      <span>${f.name}</span>
-      <span class="file-meta">${f.size}</span>
-      <span class="file-meta">${f.type}</span>
-      <span class="file-meta">${f.mod}</span>
-    </div>
-  `).join('');
-}
-
 function renderWeeks() {
-  let el = document.getElementById('week-grid');
-  el.innerHTML = Array.from({length:25}, (_,i) =>
+  document.getElementById('week-grid').innerHTML = Array.from({length:25},(_,i) =>
     `<div class="week-box ${i===0?'active':''}">${i+1}</div>`
   ).join('');
 }
 
-// === MATRIX RAIN ===
+// === MATRIX ===
 function initMatrix() {
-  let canvas = document.getElementById('matrix-canvas');
-  let ctx = canvas.getContext('2d');
-  canvas.width = 200; canvas.height = 400;
-  let cols = Math.floor(canvas.width / 10);
-  let drops = Array(cols).fill(0);
-  let chars = "アイウエオUMBRAL01影光闇".split("");
-
-  setInterval(() => {
-    ctx.fillStyle = "rgba(0,0,0,0.05)";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = "#00ff4140";
-    ctx.font = "10px monospace";
-    drops.forEach((y, i) => {
-      ctx.fillText(chars[Math.floor(Math.random()*chars.length)], i*10, y*10);
-      if (y*10 > canvas.height && Math.random() > 0.975) drops[i] = 0;
+  let c = document.getElementById('matrix-canvas');
+  let ctx = c.getContext('2d');
+  c.width=200; c.height=500;
+  let cols=Math.floor(c.width/10), drops=Array(cols).fill(0);
+  let chars="アイウエオUMBRAL01影光闇".split("");
+  setInterval(()=>{
+    ctx.fillStyle="rgba(0,0,0,0.05)";
+    ctx.fillRect(0,0,c.width,c.height);
+    ctx.fillStyle="#00ff4140";
+    ctx.font="10px monospace";
+    drops.forEach((y,i)=>{
+      ctx.fillText(chars[Math.floor(Math.random()*chars.length)],i*10,y*10);
+      if(y*10>c.height&&Math.random()>0.975)drops[i]=0;
       drops[i]++;
     });
-  }, 60);
+  },60);
 }
 
-// === CPU BARS ===
-let cpuHistory = Array(25).fill(5);
-function initCPU() {
-  setInterval(() => {
-    cpuHistory.push(Math.random()*40+10);
-    cpuHistory.shift();
-    let el = document.getElementById('cpu-bars');
-    el.innerHTML = cpuHistory.map(v => {
-      let color = v > 30 ? '#ff0' : v > 15 ? '#00ff41' : '#003300';
-      return `<div style="flex:1;background:${color};height:${Math.max(v/4,1)}px;align-self:flex-end;"></div>`;
+// === CPU ===
+let cpuH=Array(25).fill(5);
+function initCPU(){
+  setInterval(()=>{
+    cpuH.push(Math.random()*40+10); cpuH.shift();
+    document.getElementById('cpu-bars').innerHTML=cpuH.map(v=>{
+      let col=v>30?'#ff0':v>15?'#00ff41':'#003300';
+      return `<div style="flex:1;background:${col};height:${Math.max(v/4,1)}px;align-self:flex-end;"></div>`;
     }).join('');
-    document.getElementById('cpu-pct').textContent = cpuHistory[cpuHistory.length-1].toFixed(0)+'%';
-  }, 800);
+    document.getElementById('cpu-pct').textContent=cpuH[cpuH.length-1].toFixed(0)+'%';
+  },800);
 }
 
 // === CLOCK ===
-let startTime = Date.now();
-function startClock() {
-  setInterval(() => {
-    let now = new Date();
-    let timeStr = now.toLocaleTimeString('en-US', {hour12:true});
-    document.getElementById('taskbar-time').textContent = timeStr;
-    document.getElementById('htop-time').textContent = now.toLocaleTimeString();
-    let elapsed = Math.floor((Date.now() - startTime) / 1000);
-    let h = String(Math.floor(elapsed/3600)).padStart(2,'0');
-    let m = String(Math.floor((elapsed%3600)/60)).padStart(2,'0');
-    let s = String(elapsed%60).padStart(2,'0');
-    document.getElementById('uptime').textContent = `${h}:${m}:${s}`;
-  }, 1000);
-}
-
-// === ANIMATED COUNTERS ===
-function animateCounters() {
-  animateCount('loc-counter', 1744, 2000);
-  animateCount('commit-counter', 5, 1500);
-}
-function animateCount(id, target, duration) {
-  let el = document.getElementById(id);
-  let start = 0;
-  let startTime = Date.now();
-  function tick() {
-    let progress = Math.min((Date.now()-startTime)/duration, 1);
-    let eased = 1 - Math.pow(1-progress, 3);
-    el.textContent = Math.floor(target * eased).toLocaleString();
-    if (progress < 1) requestAnimationFrame(tick);
-  }
-  tick();
+let t0=Date.now();
+function startClock(){
+  setInterval(()=>{
+    let now=new Date();
+    document.getElementById('taskbar-time').textContent=now.toLocaleTimeString('en-US',{hour12:true});
+    document.getElementById('htop-time').textContent=now.toLocaleTimeString();
+    let e=Math.floor((Date.now()-t0)/1000);
+    document.getElementById('uptime').textContent=
+      String(Math.floor(e/3600)).padStart(2,'0')+':'+
+      String(Math.floor((e%3600)/60)).padStart(2,'0')+':'+
+      String(e%60).padStart(2,'0');
+  },1000);
 }
 </script>
 </body>
