@@ -1,0 +1,130 @@
+class_name CodeGenerator
+extends RefCounted
+
+# Signals for code generation events
+signal code_generated(file_path: String, content: String)
+signal generation_started()
+signal generation_completed()
+signal generation_failed(error: String)
+
+# Export properties for configuration
+@export var output_directory: String = "src/"
+@export var template_directory: String = "templates/"
+@export var backup_enabled: bool = true
+@export var overwrite_existing: bool = false
+
+# Type hints for internal variables
+var _file_system: FileAccess
+var _templates: Dictionary = {}
+var _generation_queue: Array[Dictionary] = []
+
+# Main code generation function
+func generate_code() -> void:
+	generation_started.emit()
+	
+	# Clear existing files with backticks in names (similar to shell command)
+	_cleanup_invalid_files()
+	
+	# Process generation queue
+	for item in _generation_queue:
+		_generate_file(item)
+	
+	generation_completed.emit()
+
+# Clean up files with invalid characters (backticks)
+func _cleanup_invalid_files() -> void:
+	var dir = DirAccess.open(output_directory)
+	if dir == null:
+		return
+	
+	dir.list_dir_begin()
+	var file_name = dir.get_next()
+	
+	while file_name != "":
+		if "`" in file_name:
+			var full_path = output_directory + "/" + file_name
+			dir.remove(full_path)
+		file_name = dir.get_next()
+
+# Generate individual file from template
+func _generate_file(config: Dictionary) -> void:
+	var template_path: String = config.get("template", "")
+	var output_path: String = config.get("output", "")
+	var variables: Dictionary = config.get("variables", {})
+	
+	if not FileAccess.file_exists(template_directory + template_path):
+		generation_failed.emit("Template not found: " + template_path)
+		return
+	
+	var template_content = _load_template(template_path)
+	var generated_content = _process_template(template_content, variables)
+	
+	if _write_file(output_path, generated_content):
+		code_generated.emit(output_path, generated_content)
+	else:
+		generation_failed.emit("Failed to write file: " + output_path)
+
+# Load template file content
+func _load_template(template_name: String) -> String:
+	if template_name in _templates:
+		return _templates[template_name]
+	
+	var file = FileAccess.open(template_directory + template_name, FileAccess.READ)
+	if file == null:
+		return ""
+	
+	var content = file.get_as_text()
+	file.close()
+	
+	_templates[template_name] = content
+	return content
+
+# Process template with variable substitution
+func _process_template(template: String, variables: Dictionary) -> String:
+	var result = template
+	
+	# Replace variables in {{variable}} format
+	for key in variables:
+		var placeholder = "{{" + str(key) + "}}"
+		result = result.replace(placeholder, str(variables[key]))
+	
+	return result
+
+# Write generated content to file
+func _write_file(file_path: String, content: String) -> bool:
+	var full_path = output_directory + "/" + file_path
+	
+	# Create backup if enabled
+	if backup_enabled and FileAccess.file_exists(full_path):
+		_create_backup(full_path)
+	
+	# Check if we should overwrite
+	if not overwrite_existing and FileAccess.file_exists(full_path):
+		return false
+	
+	var file = FileAccess.open(full_path, FileAccess.WRITE)
+	if file == null:
+		return false
+	
+	file.store_string(content)
+	file.close()
+	return true
+
+# Create backup of existing file
+func _create_backup(file_path: String) -> void:
+	var backup_path = file_path + ".backup"
+	var dir = DirAccess.open(".")
+	if dir:
+		dir.copy(file_path, backup_path)
+
+# Add file to generation queue
+func add_generation_task(template: String, output: String, variables: Dictionary = {}) -> void:
+	_generation_queue.append({
+		"template": template,
+		"output": output,
+		"variables": variables
+	})
+
+# Clear generation queue
+func clear_queue() -> void:
+	_generation_queue.clear()
