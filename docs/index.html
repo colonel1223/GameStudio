@@ -52,6 +52,16 @@ html,body{background:#001a1a;min-height:100vh;overflow-x:hidden}
 .wave{display:inline-flex;align-items:flex-end;gap:1px;height:24px;vertical-align:middle}
 .wave-bar{width:2px;background:var(--g);transition:height 0.15s;border-radius:1px 1px 0 0}
 .pulse-dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin:0 3px;vertical-align:middle}
+.ag-tbl{width:100%;border-collapse:collapse}
+.ag-tbl th{font-size:10px;color:var(--d);text-align:left;padding:2px 4px;border-bottom:1px solid #2a2a4a;font-weight:400;white-space:nowrap;letter-spacing:0.05em}
+.ag-tbl th.r{text-align:right}
+.ag-tbl th.c{text-align:center}
+.ag-tbl td{padding:3px 4px;white-space:nowrap;font-size:12px;border-bottom:1px solid rgba(42,42,74,0.3)}
+.ag-tbl td.r{text-align:right}
+.ag-tbl td.c{text-align:center}
+.ag-tbl tr:hover{background:rgba(0,229,255,0.03)}
+.ag-tbl .wave{height:20px}
+.tok-label{font-size:9px;color:var(--d);display:block;line-height:1}
 .pulse-on{background:var(--g);box-shadow:0 0 4px var(--g)}
 .pulse-off{background:#333}
 .pulse-busy{background:var(--a);box-shadow:0 0 4px var(--a)}
@@ -208,21 +218,125 @@ html,body{background:#001a1a;min-height:100vh;overflow-x:hidden}
 
 <div class="W">
 <div class="Wt"><div class="Wn">htop — Agent Neural Activity Monitor</div><div class="Wb">_</div><div class="Wb">&#9633;</div><div class="Wb">X</div></div>
-<div class="T Ts">
-<span class="cd">PID  AGENT          STATE   CPU   MEM   NEURAL   CTX</span>
+<div class="T Ts" style="padding:4px 6px">
+<table class="ag-tbl">
+<thead>
+<tr>
+<th>PID</th>
+<th></th>
+<th>AGENT</th>
+<th class="c">STATUS</th>
+<th class="r">CPU</th>
+<th class="r">MEM</th>
+<th class="c">NEURAL ACTIVITY</th>
+<th class="r">TOKENS</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="cd">001</td>
+<td class="cc">&#9733;</td>
+<td class="cw">creative_director</td>
+<td class="c"><span class="pulse-dot pulse-on"></span><span class="cg">ACTIVE</span></td>
+<td class="r cd">12%</td>
+<td class="r cd">84M</td>
+<td class="c"><span id="nw0" class="wave"></span></td>
+<td class="r cd">42K<span class="tok-label">tokens</span></td>
+</tr>
+<tr>
+<td class="cd">002</td>
+<td class="ca">&#9998;</td>
+<td class="cw">narrative_designer</td>
+<td class="c"><span class="pulse-dot pulse-on"></span><span class="cg">ACTIVE</span></td>
+<td class="r cd">8%</td>
+<td class="r cd">62M</td>
+<td class="c"><span id="nw1" class="wave"></span></td>
+<td class="r cd">38K<span class="tok-label">tokens</span></td>
+</tr>
+<tr>
+<td class="cd">003</td>
+<td class="cm">&#9670;</td>
+<td class="cw">art_director</td>
+<td class="c"><span class="pulse-dot pulse-on"></span><span class="cg">ACTIVE</span></td>
+<td class="r cd">15%</td>
+<td class="r cd">91M</td>
+<td class="c"><span id="nw2" class="wave"></span></td>
+<td class="r cd">51K<span class="tok-label">tokens</span></td>
+</tr>
+<tr>
+<td class="cd">004</td>
+<td class="cb">&#9835;</td>
+<td class="cw">sound_designer</td>
+<td class="c"><span class="pulse-dot pulse-off"></span><span class="cd">IDLE</span></td>
+<td class="r cd">1%</td>
+<td class="r cd">24M</td>
+<td class="c"><span id="nw3" class="wave"></span></td>
+<td class="r cd">12K<span class="tok-label">tokens</span></td>
+</tr>
+<tr>
+<td class="cd">005</td>
+<td class="cg">&#9000;</td>
+<td class="cw">lead_programmer</td>
+<td class="c"><span class="pulse-dot pulse-busy"></span><span class="ca">CODING</span></td>
+<td class="r cr" id="cpu5">94%</td>
+<td class="r ca">256M</td>
+<td class="c"><span id="nw4" class="wave"></span></td>
+<td class="r ca" id="ctx5">128K<span class="tok-label">tokens</span></td>
+</tr>
+<tr>
+<td class="cd">006</td>
+<td class="cw">&#9776;</td>
+<td class="cw">producer</td>
+<td class="c"><span class="pulse-dot pulse-on"></span><span class="cg">ACTIVE</span></td>
+<td class="r cd">6%</td>
+<td class="r cd">48M</td>
+<td class="c"><span id="nw5" class="wave"></span></td>
+<td class="r cd">29K<span class="tok-label">tokens</span></td>
+</tr>
+<tr>
+<td class="cd">007</td>
+<td class="cm">&#10070;</td>
+<td class="cw">shader_artist</td>
+<td class="c"><span class="pulse-dot pulse-on"></span><span class="cg">ACTIVE</span></td>
+<td class="r cd">22%</td>
+<td class="r cd">128M</td>
+<td class="c"><span id="nw6" class="wave"></span></td>
+<td class="r cd">67K<span class="tok-label">tokens</span></td>
+</tr>
+<tr>
+<td class="cd">008</td>
+<td class="cr">&#9888;</td>
+<td class="cw">qa_tester</td>
+<td class="c"><span class="pulse-dot pulse-off"></span><span class="cd">STANDBY</span></td>
+<td class="r cd">2%</td>
+<td class="r cd">32M</td>
+<td class="c"><span id="nw7" class="wave"></span></td>
+<td class="r cd">15K<span class="tok-label">tokens</span></td>
+</tr>
+<tr>
+<td class="cd">009</td>
+<td class="cc">&#9787;</td>
+<td class="cw">ux_researcher</td>
+<td class="c"><span class="pulse-dot pulse-off"></span><span class="cd">IDLE</span></td>
+<td class="r cd">1%</td>
+<td class="r cd">18M</td>
+<td class="c"><span id="nw8" class="wave"></span></td>
+<td class="r cd">8K<span class="tok-label">tokens</span></td>
+</tr>
+<tr>
+<td class="cd">010</td>
+<td class="ca">&#9654;</td>
+<td class="cw">playtester</td>
+<td class="c"><span class="pulse-dot pulse-off"></span><span class="cd">WAITING</span></td>
+<td class="r cd">0%</td>
+<td class="r cd">12M</td>
+<td class="c"><span id="nw9" class="wave"></span></td>
+<td class="r cd">4K<span class="tok-label">tokens</span></td>
+</tr>
+</tbody>
+</table>
 <div class="sep"></div>
-<div class="sr"><span class="cd">001</span> <span class="cc">&#9733;</span> <span class="cw">creative_dir </span><span class="pulse-dot pulse-on"></span><span class="cg">ACTV</span> <span class="cd">12%</span> <span class="cd"> 84M</span> <span id="nw0" class="wave"></span> <span class="cd">42K</span></div>
-<div class="sr"><span class="cd">002</span> <span class="ca">&#9998;</span> <span class="cw">narrative_des</span> <span class="pulse-dot pulse-on"></span><span class="cg">ACTV</span> <span class="cd"> 8%</span> <span class="cd"> 62M</span> <span id="nw1" class="wave"></span> <span class="cd">38K</span></div>
-<div class="sr"><span class="cd">003</span> <span class="cm">&#9670;</span> <span class="cw">art_director </span><span class="pulse-dot pulse-on"></span><span class="cg">ACTV</span> <span class="cd">15%</span> <span class="cd"> 91M</span> <span id="nw2" class="wave"></span> <span class="cd">51K</span></div>
-<div class="sr"><span class="cd">004</span> <span class="cb">&#9835;</span> <span class="cw">sound_design </span><span class="pulse-dot pulse-off"></span><span class="cd">IDLE</span> <span class="cd"> 1%</span> <span class="cd"> 24M</span> <span id="nw3" class="wave"></span> <span class="cd">12K</span></div>
-<div class="sr"><span class="cd">005</span> <span class="cg">&#9000;</span> <span class="cw">lead_program </span><span class="pulse-dot pulse-busy"></span><span class="ca">CODE</span> <span class="cr" id="cpu5">94%</span> <span class="ca">256M</span> <span id="nw4" class="wave"></span> <span class="ca" id="ctx5">128K</span></div>
-<div class="sr"><span class="cd">006</span> <span class="cw">&#9776;</span> <span class="cw">producer     </span><span class="pulse-dot pulse-on"></span><span class="cg">ACTV</span> <span class="cd"> 6%</span> <span class="cd"> 48M</span> <span id="nw5" class="wave"></span> <span class="cd">29K</span></div>
-<div class="sr"><span class="cd">007</span> <span class="cm">&#10070;</span> <span class="cw">shader_artst </span><span class="pulse-dot pulse-on"></span><span class="cg">ACTV</span> <span class="cd">22%</span> <span class="cd">128M</span> <span id="nw6" class="wave"></span> <span class="cd">67K</span></div>
-<div class="sr"><span class="cd">008</span> <span class="cr">&#9888;</span> <span class="cw">qa_tester    </span><span class="pulse-dot pulse-off"></span><span class="cd">STBY</span> <span class="cd"> 2%</span> <span class="cd"> 32M</span> <span id="nw7" class="wave"></span> <span class="cd">15K</span></div>
-<div class="sr"><span class="cd">009</span> <span class="cc">&#9787;</span> <span class="cw">ux_research  </span><span class="pulse-dot pulse-off"></span><span class="cd">IDLE</span> <span class="cd"> 1%</span> <span class="cd"> 18M</span> <span id="nw8" class="wave"></span> <span class="cd"> 8K</span></div>
-<div class="sr"><span class="cd">010</span> <span class="ca">&#9654;</span> <span class="cw">playtester   </span><span class="pulse-dot pulse-off"></span><span class="cd">WAIT</span> <span class="cd"> 0%</span> <span class="cd"> 12M</span> <span id="nw9" class="wave"></span> <span class="cd"> 4K</span></div>
-<div class="sep"></div>
-<span class="cd">total: </span><span class="cw" id="total-cpu">161%</span><span class="cd"> cpu | </span><span class="cw">755M</span><span class="cd"> mem | </span><span class="cc">394K ctx</span><span class="cd"> | </span><span class="cg" id="msg-rate">847 msg/s</span>
+<span class="cd">TOTAL: </span><span class="cw" id="total-cpu">161%</span><span class="cd"> cpu | </span><span class="cw">755M</span><span class="cd"> mem | </span><span class="cc">394K</span><span class="cd"> context tokens | </span><span class="cg" id="msg-rate">847 msg/s</span><span class="cd"> ipc throughput</span>
 </div>
 </div>
 
@@ -399,7 +513,7 @@ function startJitter(){
     var e=document.getElementById('cpu5');if(e)e.textContent=v+'%';
     var t=document.getElementById('total-cpu');if(t)t.textContent=(v+67)+'%';
     var tb=document.getElementById('tb-cpu');if(tb)tb.textContent='CPU '+(v+67)+'%';
-    var ctx=document.getElementById('ctx5');if(ctx)ctx.textContent=Math.floor(125+Math.random()*8)+'K';
+    var ctx=document.getElementById('ctx5');if(ctx)ctx.innerHTML=Math.floor(125+Math.random()*8)+'K<span class="tok-label">tokens</span>';
     var rate=800+Math.floor(Math.random()*120);
     var mr=document.getElementById('msg-rate');if(mr)mr.textContent=rate+' msg/s';
     var tbm=document.getElementById('tb-msgs');if(tbm)tbm.textContent='\u25B2 '+rate+' msg/s';
